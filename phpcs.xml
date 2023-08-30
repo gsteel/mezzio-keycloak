@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<ruleset name="Local Rules">
+    <arg name="basepath" value="."/>
+    <arg name="extensions" value="php"/>
+    <arg name="parallel" value="80"/>
+    <arg name="cache" value="data/cache/php_cs.cache"/>
+    <arg name="colors"/>
+    <arg value="nps"/>
+
+    <file>src</file>
+    <file>test</file>
+
+    <rule ref="Doctrine">
+        <exclude name="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed" />
+        <exclude name="Generic.Formatting.MultipleStatementAlignment.NotSame" />
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
+        <exclude-pattern>config/*.php</exclude-pattern>
+    </rule>
+</ruleset>

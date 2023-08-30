@@ -1,0 +1,90 @@
+
+version: '3'
+
+services:
+  redis:
+    image: 'redis:7-alpine'
+    volumes:
+      - 'redis:/data'
+    networks:
+      - internal
+
+  nginx:
+    image: 'nginx:mainline-alpine'
+    env_file:
+      - .env
+    volumes:
+      - './docker/nginx/nginx.conf:/etc/nginx/templates/default.conf.template'
+      - './:/app'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.MezzioKeyCloak.rule=Host(`${MEZZIO_HOSTNAME}`)"
+      - "traefik.http.routers.MezzioKeyCloak.service=MezzioKeyCloak"
+      - "traefik.http.routers.MezzioKeyCloak.entrypoints=https"
+      - "traefik.http.services.MezzioKeyCloak.loadbalancer.server.port=80"
+    networks:
+      - traefik
+      - internal
+
+  php:
+    build:
+      context: ./
+      dockerfile: ./docker/php-fpm/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - './:/app'
+    networks:
+      - internal
+
+  keycloak:
+    image: keycloak/keycloak:${KEYCLOAK_VERSION}
+    networks:
+      - internal
+      - traefik
+    env_file:
+      - .env
+    environment:
+      KC_PROXY_ADDRESS_FORWARDING: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME: ${KC_HOSTNAME}
+      KC_PROXY: edge
+      KC_HTTP_ENABLED: "true"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak?ssl=allow
+      KC_DB_USERNAME: keycloak
+      KC_DB_SCHEMA: public
+      KC_DB_PASSWORD: postgres_password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+    command:
+      - start
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`${KC_HOSTNAME}`)"
+      - "traefik.http.routers.keycloak.service=keycloak"
+      - "traefik.http.routers.keycloak.entrypoints=https"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+
+  postgres:
+    image: postgres:15-alpine
+    networks:
+      - internal
+    ports:
+      - '5432:5432'
+    volumes:
+      - 'postgresData:/var/lib/postgresql/data'
+      #- './docker/postgres/init:/docker-entrypoint-initdb.d'
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: keycloak
+
+networks:
+  internal:
+  traefik:
+    external: true
+
+volumes:
+  redis: {}
+  postgresData: {}
