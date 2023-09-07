@@ -5,13 +5,13 @@ declare(strict_types=1);
 use Laminas\ConfigAggregator\ArrayProvider;
 use Laminas\ConfigAggregator\ConfigAggregator;
 use Laminas\ConfigAggregator\PhpFileProvider;
-use Mezzio\Helper\ConfigProvider;
 
 $cacheConfig = [
     'config_cache_path' => 'data/cache/config-cache.php',
 ];
 
 $aggregator = new ConfigAggregator([
+    \Mezzio\Authentication\ConfigProvider::class,
     \Mezzio\Session\Cache\ConfigProvider::class,
     \Mezzio\Session\ConfigProvider::class,
     \Mezzio\LaminasView\ConfigProvider::class,
@@ -19,7 +19,6 @@ $aggregator = new ConfigAggregator([
     \Mezzio\Router\FastRouteRouter\ConfigProvider::class,
     \Laminas\HttpHandlerRunner\ConfigProvider::class,
     new ArrayProvider($cacheConfig),
-    ConfigProvider::class,
     \Mezzio\ConfigProvider::class,
     \Mezzio\Router\ConfigProvider::class,
     \Laminas\Diactoros\ConfigProvider::class,

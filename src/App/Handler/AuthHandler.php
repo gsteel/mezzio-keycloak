@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Handler;
 
+use App\Auth\AuthenticationAdapter;
 use App\Value\HttpRedirect;
 use Laminas\Diactoros\Response\RedirectResponse;
-use Laminas\Diactoros\Response\TextResponse;
 use League\OAuth2\Client\Token\AccessToken;
 use Mezzio\Session\RetrieveSession;
 use Psr\Http\Message\ResponseInterface;
@@ -18,10 +18,6 @@ use Throwable;
 
 use function assert;
 use function is_string;
-use function json_encode;
-use function sprintf;
-
-use const JSON_PRETTY_PRINT;
 
 final readonly class AuthHandler implements RequestHandlerInterface
 {
@@ -34,9 +30,19 @@ final readonly class AuthHandler implements RequestHandlerInterface
     {
         $session = RetrieveSession::fromRequest($request);
         $query = $request->getQueryParams();
+
+        /**
+         * There's no `code` query parameter. Redirect to the OAuth server to start authentication:
+         */
         if (! isset($query['code'])) {
             $authorizationUrl = $this->provider->getAuthorizationUrl();
+            // Store state, provided by the server so that we can check the value when the user comes back
             $session->set('OAuth2State', $this->provider->getState());
+
+            /** PKCE is not available in the used Keycloak provider dependency */
+            // $pkceCode = $this->provider->getPkceCode();
+            // Assert::stringNotEmpty($pkceCode);
+            // $session->set('OAuthPKCECode', $pkceCode);
 
             return new RedirectResponse(
                 $authorizationUrl,
@@ -44,6 +50,10 @@ final readonly class AuthHandler implements RequestHandlerInterface
             );
         }
 
+        /**
+         * If the state passed back to us in the query doesn't match what the server gave us previously,
+         * then abort the flow.
+         */
         $state = $query['state'] ?? null;
         if (! is_string($state) || $state === '' || $state !== $session->get('OAuth2State')) {
             $session->unset('OAuth2State');
@@ -51,7 +61,16 @@ final readonly class AuthHandler implements RequestHandlerInterface
             throw new RuntimeException('Invalid session state');
         }
 
+        $session->unset('OAuth2State');
+
+        /**
+         * Use the authentication code provided by the server to fetch a valid access token
+         */
         try {
+            /** PKCE is not available in the used Keycloak provider dependency */
+            // $pkceCode = $session->get('OAuthPKCECode');
+            // Assert::stringNotEmpty($pkceCode);
+            // $this->provider->setPkceCode($pkceCode);
             $accessToken = $this->provider->getAccessToken('authorization_code', [
                 'code' => $query['code'],
             ]);
@@ -59,26 +78,12 @@ final readonly class AuthHandler implements RequestHandlerInterface
             throw new RuntimeException('Access token retrieval failed', 0, $e);
         }
 
-        try {
-            assert($accessToken instanceof AccessToken);
-            $user = $this->provider->getResourceOwner($accessToken);
+        /**
+         * Save the access token in the session - we're now authenticated
+         */
+        assert($accessToken instanceof AccessToken);
+        AuthenticationAdapter::persistToken($accessToken, $session);
 
-            return new TextResponse(sprintf(
-                <<<'TEXT'
-                Hey There %s 👋,
-                The details we got for you are as follows:
-                %s
-                TEXT,
-                (string) $user->getName(),
-                json_encode([
-                    'name' => $user->getName(),
-                    'id' => $user->getId(),
-                    'email' => $user->getEmail(),
-                    'accessToken' => $accessToken,
-                ], JSON_PRETTY_PRINT),
-            ));
-        } catch (Throwable $e) {
-            throw new RuntimeException('Failed to retrieve user details', 0, $e);
-        }
+        return new RedirectResponse('/', HttpRedirect::Temporary->value);
     }
 }

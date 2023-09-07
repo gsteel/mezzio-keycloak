@@ -1,116 +1,60 @@
-<?php $this->headTitle('Home'); ?>
+<?php
+
+declare(strict_types=1);
+
+use Laminas\View\Renderer\PhpRenderer;
+
+/** @var PhpRenderer $this */
+
+$this->headTitle('Home');
+?>
 
 <div class="jumbotron">
-    <h1>Welcome to <span class="mezzio-green">mezzio</span></h1>
+    <h1>Mezzio &amp; Keycloak OpenID Connect Example</h1>
     <p>
-        Congratulations! You have successfully installed the
-        <a href="https://github.com/mezzio/mezzio-skeleton" target="_blank">mezzio skeleton application</a>.
-        This skeleton can serve as a simple starting point for you to begin building your application.
-    </p>
-    <p>
-        Mezzio builds on laminas-stratigility to provide a minimalist PSR-7 middleware framework for PHP.
+        This simple app serves as a bare-bones example of offloading user management and authentication to a Keycloak server.
     </p>
 </div>
 
 <div class="row">
-    <div class="col-md-4">
-        <h2>
-            <a href="https://docs.mezzio.dev/mezzio/getting-started/features" target="_blank">
-                <i class="fa fa-bolt"></i> Agile &amp; Lean
-            </a>
-        </h2>
+    <div class="col">
+        <h2>Introduction</h2>
         <p>
-            Mezzio is fast, small and perfect for rapid application development, prototyping and api's.
-            You decide how you extend it and choose the best packages from major framework or standalone projects.
+            The Mezzio app is a fresh install of the <a href="https://docs.mezzio.dev/mezzio/v3/getting-started/quick-start/">skeleton</a>
+            with a handful of additional dependencies and some additional routes.
+        </p>
+        <p>
+            First of all, providing you haven't logged in and registered yet, you'll receive a 403 error at
+            '<a href="<?= $this->url('secret') ?>"><?= $this->url('secret') ?></a>'.
+        </p>
+        <p>
+            The middleware pipeline for this route contains the default <code>Mezzio\Authentication\AuthenticationMiddleware</code>,
+            followed by a request handler that renders some HTML content.
+        </p>
+        <p>
+            The <a href="<?= $this->url('auth') ?>"><?= $this->url('auth') ?></a> route redirects you to the Keycloak
+            server for registration and authentication, completes the
+            <a href="https://fusionauth.io/articles/oauth/modern-guide-to-oauth#authorization-code-grant">Authorization Code Grant flow</a>
+            and persists your access and refresh tokens in your session.
+        </p>
+        <p>
+            Once you've been authenticated, you'll be able to access <a href="<?= $this->url('secret') ?>"><?= $this->url('secret') ?></a>
+            and witness the wonders therein.
+        </p>
+        <p>
+            Finally, the <a href="<?= $this->url('logout') ?>"><?= $this->url('logout') ?></a> route clears your local session,
+            redirects you to the Keycloak logout endpoint which in turn redirects you back to this application.
         </p>
     </div>
 
-    <div class="col-md-4">
-        <h2>
-            <a href="https://github.com/laminas/laminas-diactoros" target="_blank">
-                <i class="fa fa-exchange-alt"></i> HTTP Messages
-            </a>
-        </h2>
-        <p>
-            HTTP messages are the foundation of web development. Web browsers and HTTP clients such as cURL create
-            HTTP request messages that are sent to a web server, which provides an HTTP response message.
-            Server-side code receives an HTTP request message, and returns an HTTP response message.
-        </p>
+    <div class="col">
+        <h2>Key Documentation Sites</h2>
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action" href="https://docs.mezzio.dev">Mezzio Docs</a>
+            <a class="list-group-item list-group-item-action" href="https://www.keycloak.org/documentation">Keycloak Docs</a>
+            <a class="list-group-item list-group-item-action" href="https://oauth2-client.thephpleague.com">League OAuth Client Docs</a>
+            <a class="list-group-item list-group-item-action" href="https://docs.mezzio.dev/mezzio-authentication/">Mezzio Authentication</a>
+        </div>
     </div>
 
-    <div class="col-md-4">
-        <h2>
-            <a href="https://github.com/laminas/laminas-stratigility" target="_blank">
-                <i class="fa fa-dot-circle"></i> Middleware
-            </a>
-        </h2>
-        <p>
-            Middleware is code that exists between the request and response, and which can take the incoming
-            request, perform actions based on it, and either complete the response or pass delegation on to the
-            next middleware in the queue. Your application is easily extended with custom middleware created by
-            yourself or <a href="https://packagist.org/search/?q=middleware" target="_blank">others</a>.
-        </p>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <h2>
-            <a href="https://docs.mezzio.dev/mezzio/features/container/intro" target="_blank">
-                <i class="fa fa-cube"></i> Containers
-            </a>
-        </h2>
-        <p>
-            Mezzio promotes and advocates the usage of Dependency Injection/Inversion of Control containers
-            when writing your applications. Mezzio supports multiple containers which typehints against
-            <a href="https://github.com/php-fig/container" target="_blank">PSR Container</a>.
-        </p>
-        <?php if (isset($this->containerName)) : ?>
-            <p>
-                <a href="<?= $this->containerDocs ?>" target="_blank">
-                    Get started with <?= $this->containerName ?>.
-                </a>
-            </p>
-        <?php endif; ?>
-    </div>
-
-    <div class="col-md-4">
-        <h2>
-            <a href="https://docs.mezzio.dev/mezzio/features/router/intro" target="_blank">
-                <i class="fa fa-plane"></i> Routers
-            </a>
-        </h2>
-        <p>
-            One fundamental feature of mezzio is that it provides mechanisms for implementing dynamic
-            routing, a feature required in most modern web applications. Mezzio ships with multiple adapters.
-        </p>
-        <?php if (isset($this->routerName)) : ?>
-            <p>
-                <a href="<?= $this->routerDocs ?>" target="_blank">
-                    Get started with <?= $this->routerName ?>.
-                </a>
-            </p>
-        <?php endif; ?>
-    </div>
-
-    <div class="col-md-4">
-        <h2>
-            <a href="https://docs.mezzio.dev/mezzio/features/template/laminas-view" target="_blank">
-                <i class="fa fa-edit"></i> Templating
-            </a>
-        </h2>
-        <p>
-            By default, no middleware in Mezzio is templated. We do not even provide a default templating
-            engine, as the choice of templating engine is often very specific to the project and/or organization.
-            However, Mezzio does provide abstraction for templating, which allows you to write middleware that
-            is engine-agnostic.
-        </p>
-        <?php if (isset($this->templateName)) : ?>
-            <p>
-                <a href="<?= $this->templateDocs ?>" target="_blank">
-                    Get started with <?= $this->templateName ?>.
-                </a>
-            </p>
-        <?php endif; ?>
-    </div>
 </div>

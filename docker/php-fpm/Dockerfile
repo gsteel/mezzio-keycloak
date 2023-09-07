@@ -18,4 +18,4 @@ COPY ../ .
 # Composer Install
 #
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-RUN composer install --optimize-autoloader --no-dev
+RUN composer install --optimize-autoloader

@@ -32,14 +32,17 @@ final class ConfigProvider
                 Handler\PingHandler::class => Handler\PingHandler::class,
             ],
             'factories'  => [
+                Auth\AuthenticationAdapter::class => Auth\AuthenticationAdapterFactory::class,
                 Cache\SessionCache::class => Cache\SessionCacheFactory::class,
                 Handler\AuthHandler::class => Handler\AuthHandlerFactory::class,
                 Handler\HomePageHandler::class => Handler\HomePageHandlerFactory::class,
+                Handler\SecretHandler::class => Handler\SecretHandlerFactory::class,
                 Redis::class => Cache\RedisClientFactory::class,
                 Stevenmaguire\OAuth2\Client\Provider\Keycloak::class => Auth\KeycloakProviderFactory::class,
             ],
             'aliases' => [
                 Mezzio\Session\SessionPersistenceInterface::class => Mezzio\Session\Cache\CacheSessionPersistence::class,
+                Mezzio\Authentication\AuthenticationInterface::class => Auth\AuthenticationAdapter::class,
             ],
         ];
     }
@@ -51,6 +54,8 @@ final class ConfigProvider
             'map' => [
                 'layout::default' => __DIR__ . '/../../templates/layout/default.phtml',
                 'app::home-page' => __DIR__ . '/../../templates/app/home-page.phtml',
+                'app::secret' => __DIR__ . '/../../templates/app/secret.phtml',
+                'error::403' => __DIR__ . '/../../templates/error/403.phtml',
                 'error::404' => __DIR__ . '/../../templates/error/404.phtml',
                 'error::error' => __DIR__ . '/../../templates/error/error.phtml',
             ],

@@ -40,8 +40,11 @@
         "laminas/laminas-diactoros": "^3.1.0",
         "laminas/laminas-servicemanager": "^3.21",
         "laminas/laminas-stdlib": "^3.17",
+        "lcobucci/clock": "^3.1",
+        "lcobucci/jwt": "^5.0",
         "league/oauth2-client": "^2.7",
         "mezzio/mezzio": "^3.17",
+        "mezzio/mezzio-authentication": "^1.8",
         "mezzio/mezzio-fastroute": "^3.10",
         "mezzio/mezzio-helpers": "^5.15",
         "mezzio/mezzio-laminasviewrenderer": "^2.14",
@@ -54,7 +57,8 @@
         "psr/http-server-handler": "^1.0.2",
         "psr/http-server-middleware": "^1.0.2",
         "stevenmaguire/oauth2-keycloak": "^5.0",
-        "symfony/cache": "^6.3.4"
+        "symfony/cache": "^6.3.4",
+        "webmozart/assert": "^1.11"
     },
     "require-dev": {
         "doctrine/coding-standard": "^12.0",
